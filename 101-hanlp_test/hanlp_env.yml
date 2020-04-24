@@ -1,0 +1,5 @@
+name: hanlp
+dependencies:
+- python=3.7
+- pip:
+  - hanlp==2.0.0a42
