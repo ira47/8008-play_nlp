@@ -6,7 +6,7 @@ class boring_out:
     STRING_PER_LINE_TO_SHOW = 50
     TOTAL_LINE_TO_SHOW = 19
 
-    line = 0
+    line = 105
     ss = [] # sentences
     boring_words = []
     boring_ss = []
@@ -25,7 +25,8 @@ class boring_out:
             with open('boring_ss.csv', encoding='utf-8') as f:
                 lines = csv.reader(f)
                 for line in lines:
-                    self.boring_ss.append(line)
+                    int_line = list(map(int, line))
+                    self.boring_ss.append(int_line)
             with open('good_words.csv', encoding='utf-8') as f:
                 lines = csv.reader(f)
                 for line in lines:
@@ -33,7 +34,9 @@ class boring_out:
             with open('good_ss.csv', encoding='utf-8') as f:
                 lines = csv.reader(f)
                 for line in lines:
-                    self.good_ss.append(line)
+                    int_line = list(map(int, line))
+                    self.good_ss.append(int_line)
+
         except IOError:
             self.boring_ss = [[] for i in range(len(self.ss))]
             self.good_ss = [[] for i in range(len(self.ss))]
@@ -106,25 +109,84 @@ class boring_out:
             f = csv.writer(ff)
             for ws in self.good_ss:
                 f.writerow(ws)
+        print('已保存所有数据。')
 
+    def show_boring_words(self):
+        for index,word in enumerate(self.boring_words):
+            print(index,word)
+
+    def show_good_words(self):
+        for index,word in enumerate(self.good_words):
+            print(index,word)
+
+    def delete_boring_word(self,index):
+        self.boring_words.pop(index)
+        for s_idx,s in enumerate(self.boring_ss):
+            wrong_index = -1
+            for i_idx,i in enumerate(s):
+                if i > index:
+                    self.boring_ss[s_idx][i_idx] -= 1
+                elif i == index:
+                    wrong_index = i_idx
+            if wrong_index != -1:
+                self.boring_ss[s_idx].pop(wrong_index)
+
+    def delete_good_word(self,index):
+        self.good_words.pop(index)
+        for s_idx,s in enumerate(self.good_ss):
+            wrong_index = -1
+            for i_idx,i in enumerate(s):
+                if i > index:
+                    self.boring_ss[s_idx][i_idx] -= 1
+                elif i == index:
+                    wrong_index = i_idx
+            if wrong_index != -1:
+                self.good_ss[s_idx].pop(wrong_index)
 
     def __init__(self):
         self.load_data()
+        need_output = True
         while 1:
             command = ''
-
-            line = self.output_msgs()
+            if need_output:
+                line = self.output_msgs()
             while command == '':
                 command = input()
 
-            if command[0] == '0':
-                self.save_data()
-                return
-            elif command[0] == '1': # 切换下一屏
-                self.line = line
-            elif command[0] == ' ':
+            if len(command) == 1:
+                if command[0] == '0':
+                    self.save_data()
+                    print(self.line)
+                    return
+                elif command[0] == ' ': # 切换下一屏
+                    self.line = line
+                elif command[0] == '`':
+                    need_output = not need_output
+                elif command[0] == '3':
+                    self.show_boring_words()
+                elif command[0] == '4':
+                    self.show_good_words()
+                elif command[0] == '5':
+                    self.save_data()
+
+            elif command[0] == '1':
+                self.process_new_boring_word(command[1:])
+            elif command[0] == '2':
                 self.process_new_good_word(command[1:])
-            else:
-                self.process_new_boring_word(command)
+            elif command[0] == '3':
+                if len(command) > 2 and command[1] == ' ':
+                    word_idx = int(command[1:])
+                    word = self.boring_words[word_idx]
+                    self.delete_boring_word(word_idx)
+                    output = '已经删除序号为{}的boring词，名称为：{}'
+                    print(output.format(word_idx,word))
+            elif command[0] == '4':
+                if len(command) > 2 and command[1] == ' ':
+                    word_idx = int(command[2:])
+                    word = self.good_words[word_idx]
+                    self.delete_good_word(word_idx)
+                    output = '已经删除序号为{}的good词，名称为：{}'
+                    print(output.format(word_idx,word))
+
 
 boring_out()
