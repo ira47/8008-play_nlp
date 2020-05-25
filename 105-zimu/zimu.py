@@ -1,4 +1,4 @@
-class zimu_processing:
+class zimu:
     WINDOW_SIZE = 5
     GOOD_ZIMU_FILE_NAME = '三好乱弹 – 那些濒临破产的年轻人II.srt'
     BAD_ZIMU_FILE_NAME = 'CHS_三好乱弹+–+那些濒临破产的年轻人II.srt'
