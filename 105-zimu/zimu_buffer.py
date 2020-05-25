@@ -1,6 +1,6 @@
 class zimu_buffer:
     BUFFER_SIZE = 100
-    CLAUSE_LENGTH = 2
+    CLAUSE_LENGTH = 4
     GOOD_ZIMU_FILE_NAME = '三好乱弹 – 那些濒临破产的年轻人II.srt'
     BAD_ZIMU_FILE_NAME = 'CHS_三好乱弹+–+那些濒临破产的年轻人II.srt'
 
@@ -32,23 +32,24 @@ class zimu_buffer:
         return zimu, time
 
     def update_buffer(self):
-        at_end_good = self.line_to_read_good >= len(self.zimu_good)
-        at_end_bad = self.line_to_read_bad >= len(self.zimu_bad)
-        while not at_end_good and self.buffer_length_good < self.BUFFER_SIZE:
+        while not self.line_to_read_good >= len(self.zimu_good) \
+                and self.buffer_length_good < self.BUFFER_SIZE:
             string = self.zimu_good[self.line_to_read_good]
             self.string_good += string
             self.buffer_length_good += len(string)
             for index,value in enumerate(string):
                 self.buffer_good.append([self.line_to_read_good,index])
             self.line_to_read_good += 1
-        while not at_end_bad and self.buffer_length_bad < self.BUFFER_SIZE:
+        while not self.line_to_read_bad >= len(self.zimu_bad) \
+                and self.buffer_length_bad < self.BUFFER_SIZE:
             string = self.zimu_bad[self.line_to_read_bad]
             self.string_bad += string
             self.buffer_length_bad += len(string)
             for index,value in enumerate(string):
                 self.buffer_bad.append([self.line_to_read_bad,index])
             self.line_to_read_bad += 1
-        return at_end_bad and at_end_good # 返回是否到字幕的末端
+        return self.line_to_read_good >= len(self.zimu_good) \
+               and self.line_to_read_bad >= len(self.zimu_bad) # 返回是否到字幕的末端
 
     def update_words(self,length):
         line_start = self.buffer_bad[0][0]
@@ -66,18 +67,20 @@ class zimu_buffer:
     def main(self):
         while 1:
             end = self.update_buffer()
-            print('bad',self.string_bad)
-            print('good',self.string_good)
+            # print('bad',self.string_bad)
+            # print('good',self.string_good)
+            # print(self.string_good[0] == self.string_bad[0])
             find = False
             for index_bad in range(self.buffer_length_bad-self.CLAUSE_LENGTH+1):
-                clause = self.string_good[index_bad:index_bad+self.CLAUSE_LENGTH]
+                clause = self.string_bad[index_bad:index_bad+self.CLAUSE_LENGTH]
                 count = self.string_good.count(clause)
                 if count == 0 or count >= 2:
                     continue
+                find = True
                 index_good = self.string_good.index(clause)
                 if index_bad == index_good:
                     self.update_words(index_good)
-                    find = True
+                # print(index_bad,index_good,clause)
                 delete_length_good = index_good + self.CLAUSE_LENGTH
                 delete_length_bad = index_bad + self.CLAUSE_LENGTH
                 self.string_good = self.string_good[delete_length_good:]
